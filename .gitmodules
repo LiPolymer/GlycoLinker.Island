@@ -1,0 +1,3 @@
+[submodule "submodules/Glycoprotein"]
+	path = submodules/Glycoprotein
+	url = https://gitlab.com/LiPolymer/Glycoprotein

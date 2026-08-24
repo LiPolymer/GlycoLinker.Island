@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="GlycoLinker.Island/GlycoLinker.Island.csproj" />
+  <Project Path="submodules/Glycoprotein/Glycoprotein/Glycoprotein.csproj" />
+  <Project Path="submodules/Glycoprotein/Glycoprotein.HostedService/Glycoprotein.HostedService.csproj" />
+</Solution>
