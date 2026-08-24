@@ -1,0 +1,21 @@
+<ci:TriggerSettingsControlBase x:Class="GlycoLinker.Island.Automations.Triggers.GlycoTriggerSettings"
+                               x:TypeArguments="local:GlycoTriggerConfig"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:local="clr-namespace:GlycoLinker.Island.Automations.Triggers"
+                               xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                               mc:Ignorable="d" d:DesignWidth="400"
+                               x:CompileBindings="False">
+    <StackPanel Orientation="Vertical" Spacing="8">
+        <ci:Field Label="对外暴露的「结构域ID」">
+            <TextBox Text="{Binding Settings.Fid, Mode=TwoWay}"
+                     MinWidth="220"
+                     HorizontalAlignment="Stretch"/>
+        </ci:Field>
+        <TextBlock TextWrapping="Wrap" Opacity="0.6">
+            <Run Text="本机「G节点ID」["/><Run Text="{Binding LocalGid}"/><Run Text="]"/>
+        </TextBlock>
+    </StackPanel>
+</ci:TriggerSettingsControlBase>

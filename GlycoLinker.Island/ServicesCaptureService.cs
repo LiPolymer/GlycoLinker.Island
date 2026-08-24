@@ -1,4 +1,3 @@
-using Glycoprotein;
 using Glycoprotein.HostedService;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

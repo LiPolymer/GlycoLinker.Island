@@ -5,7 +5,7 @@
 
 id: GlycoLinker.Island
 name: GlycoLinker.Island
-description: 插件描述
+description: 将 ClassIsland 自动化接入 Glycoprotein 节点网络, 双向调用 Action 与触发器
 entranceAssembly: "GlycoLinker.Island.dll"
 url: https://example.com
 version: 0.0.0.0

@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using ClassIsland.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GlycoLinker.Island;

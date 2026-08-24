@@ -6,6 +6,9 @@ using ClassIsland.Shared;
 using Glycoprotein;
 using Glycoprotein.Glycosylation;
 using Glycoprotein.HostedService;
+using GlycoLinker.Island.Automations;
+using GlycoLinker.Island.Automations.Actions;
+using GlycoLinker.Island.Automations.Triggers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,6 +25,9 @@ public class Plugin : PluginBase {
         Config.Instance = Config.Load();
         services.AddHostedService<ServicesCaptureService>();
         services.AddSingleton(_ => new GlycoService(Config.Instance.Gid));
+        services.AddHostedService<GlycoBridge>();
+        services.AddAction<GlycoCallAction, GlycoCallSettings>();
+        services.AddTrigger<GlycoTrigger, GlycoTriggerSettings>();
         services.AddSettingsPage<SettingsPage>();
         AppBase.Current.AppStarted += async (_,_) => {
             GlycoComplex? gx = IAppHost.TryGetService<GlycoService>();

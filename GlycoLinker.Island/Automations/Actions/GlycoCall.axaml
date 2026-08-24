@@ -1,0 +1,42 @@
+<ci:ActionSettingsControlBase x:Class="GlycoLinker.Island.Automations.Actions.GlycoCallSettings"
+                              x:TypeArguments="local:GlycoCallConfig"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:local="clr-namespace:GlycoLinker.Island.Automations.Actions"
+                              xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                               mc:Ignorable="d" d:DesignWidth="400"
+                               x:CompileBindings="False">
+    <StackPanel Orientation="Vertical" Spacing="8">
+        <ci:Field Label="「G节点ID」">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <AutoCompleteBox ItemsSource="{Binding NodeIds}"
+                                 Text="{Binding Settings.TargetGid, Mode=TwoWay}"
+                                 MinWidth="220"
+                                 HorizontalAlignment="Stretch"
+                                 FilterMode="Contains"/>
+                <Button Click="ButtonRefresh_OnClick" Content="刷新"/>
+            </StackPanel>
+        </ci:Field>
+        <ci:Field Label="「结构域ID」">
+            <AutoCompleteBox ItemsSource="{Binding FieldIds}"
+                             Text="{Binding Settings.Fid, Mode=TwoWay}"
+                             MinWidth="220"
+                             HorizontalAlignment="Stretch"
+                             FilterMode="Contains"/>
+        </ci:Field>
+        <ci:Field Label="参数">
+            <StackPanel Orientation="Vertical" Spacing="6">
+                <TextBlock x:Name="ParamNote" TextWrapping="Wrap" Opacity="0.6" IsVisible="False"/>
+                <StackPanel x:Name="ParamForm" Orientation="Vertical" Spacing="6"/>
+                <TextBox x:Name="JsonParamBox"
+                         Text="{Binding Settings.PayloadJson, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="60"
+                         FontFamily="Consolas, Cascadia Mono"/>
+            </StackPanel>
+        </ci:Field>
+    </StackPanel>
+</ci:ActionSettingsControlBase>
