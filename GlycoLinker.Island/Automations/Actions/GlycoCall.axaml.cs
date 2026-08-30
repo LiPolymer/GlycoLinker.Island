@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using ClassIsland.Core.Abstractions.Automation;
@@ -12,16 +12,31 @@ using ClassIsland.Core.Attributes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Glycoprotein.Glycosylation;
 using Microsoft.Extensions.Logging;
-using CIField = ClassIsland.Core.Controls.Field;
 
 namespace GlycoLinker.Island.Automations.Actions;
 
+public sealed record NodeOption(string Id, int FieldCount) {
+    public string Detail => $"{FieldCount} 个字段";
+    public bool HasDetail => true;
+    public override string ToString() => Id;
+}
+
+public sealed record FieldOption(string Id, string? FriendlyName, string? Description) {
+    public string DisplayName => FriendlyName is { Length: > 0 } f ? f : Id;
+    public bool HasFriendlyName => FriendlyName is { Length: > 0 };
+    public bool HasDescription => Description is { Length: > 0 };
+    public override string ToString() => Id;
+}
+
 public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConfig> {
-    public ObservableCollection<string> NodeIds { get; } = [];
-    public ObservableCollection<string> FieldIds { get; } = [];
+    public ObservableCollection<NodeOption> NodeIds { get; } = [];
+    public ObservableCollection<FieldOption> FieldIds { get; } = [];
 
     readonly List<ParamField> _paramFields = [];
     bool _suppressPayloadSync;
+    bool _suppressAutoOpen;
+    string? _lastCommittedGid;
+    string? _lastCommittedFid;
 
     public GlycoCallSettings() {
         InitializeComponent();
@@ -31,7 +46,8 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
         base.OnAttachedToVisualTree(e);
         if (GlycoBridge.Instance != null) GlycoBridge.Instance.SnapshotChanged += OnSnapshotChanged;
-        Settings.PropertyChanged += OnConfigPropertyChanged;
+        _lastCommittedGid = Settings.TargetGid.Trim();
+        _lastCommittedFid = Settings.Fid.Trim();
         RefreshSnapshot();
         RefreshFields();
         RebuildParamForm();
@@ -40,12 +56,6 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) {
         base.OnDetachedFromVisualTree(e);
         if (GlycoBridge.Instance != null) GlycoBridge.Instance.SnapshotChanged -= OnSnapshotChanged;
-        Settings.PropertyChanged -= OnConfigPropertyChanged;
-    }
-
-    void OnConfigPropertyChanged(object? sender, PropertyChangedEventArgs e) {
-        if (e.PropertyName == nameof(GlycoCallConfig.TargetGid)) RefreshFields();
-        if (e.PropertyName is nameof(GlycoCallConfig.TargetGid) or nameof(GlycoCallConfig.Fid)) RebuildParamForm();
     }
 
     void OnSnapshotChanged() {
@@ -56,9 +66,53 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         });
     }
 
+    void GidBox_OnGotFocus(object? sender, FocusChangedEventArgs e) => TryAutoOpenDropDown(GidBox, NodeIds.Count);
+
+    void GidBox_OnLostFocus(object? sender, RoutedEventArgs e) => CommitGid();
+
+    void GidBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (e.AddedItems.Count == 0) return;
+        _suppressAutoOpen = true;
+        Dispatcher.UIThread.Post(() => _suppressAutoOpen = false);
+        Dispatcher.UIThread.Post(CommitGid);
+    }
+
+    void CommitGid() {
+        string gid = Settings.TargetGid.Trim();
+        if (gid == _lastCommittedGid) return;
+        _lastCommittedGid = gid;
+        RefreshFields();
+        RebuildParamForm();
+    }
+
+    void FidBox_OnGotFocus(object? sender, FocusChangedEventArgs e) => TryAutoOpenDropDown(FidBox, FieldIds.Count);
+
+    void FidBox_OnLostFocus(object? sender, RoutedEventArgs e) => CommitFid();
+
+    void FidBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (e.AddedItems.Count == 0) return;
+        _suppressAutoOpen = true;
+        Dispatcher.UIThread.Post(() => _suppressAutoOpen = false);
+        Dispatcher.UIThread.Post(CommitFid);
+    }
+
+    void TryAutoOpenDropDown(AutoCompleteBox box, int itemCount) {
+        if (_suppressAutoOpen || box.IsDropDownOpen || itemCount == 0) return;
+        box.IsDropDownOpen = true;
+    }
+
+    void CommitFid() {
+        string fid = Settings.Fid.Trim();
+        if (fid == _lastCommittedFid) return;
+        _lastCommittedFid = fid;
+        RebuildParamForm();
+    }
+
     void RefreshSnapshot() {
         NodeIds.Clear();
-        foreach (string id in GlycoBridge.Instance?.DiscoveredNodeIds ?? []) NodeIds.Add(id);
+        foreach (BeaconInfo beacon in GlycoBridge.Instance?.Snapshot ?? []) {
+            NodeIds.Add(new NodeOption(beacon.Id, beacon.Fields.Count));
+        }
     }
 
     void RefreshFields() {
@@ -69,7 +123,14 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         if (gid.Length == 0) return;
         BeaconInfo? beacon = bridge.Snapshot.FirstOrDefault(b => b.Id == gid);
         if (beacon == null) return;
-        foreach (Field field in beacon.Fields) FieldIds.Add(field.Id);
+        foreach (Field field in beacon.Fields) {
+            if (field is Field.Event) continue;
+            FieldIds.Add(new FieldOption(field.Id, field.FriendlyName, field.Description));
+        }
+        if (FieldIds.Count == 1 && Settings.Fid.Trim().Length == 0) {
+            Settings.Fid = FieldIds[0].Id;
+            _lastCommittedFid = FieldIds[0].Id;
+        }
     }
 
     void ButtonRefresh_OnClick(object? sender, RoutedEventArgs e) {
@@ -95,6 +156,11 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         JsonParamBox.IsVisible = true;
 
         Field? field = ResolveField();
+        if (field is Field.Event) {
+            ParamNoteText("该字段为 Event 类型, 无法通过本行动调用, 请改选 Method 字段。");
+            JsonParamBox.IsVisible = false;
+            return;
+        }
         if (field is not Field.Method method || method.QuerySchema is not JsonElement schemaEl) {
             if (field is Field.Method) ParamNoteText("该字段为无参 Action, 无需参数。");
             return;
@@ -120,7 +186,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                 ParamField? pf = BuildParamField(name, ps, required.Contains(name), payload);
                 if (pf == null) return;
                 _paramFields.Add(pf);
-                ParamForm.Children.Add(pf.Field);
+                ParamForm.Children.Add(pf.Row);
             }
 
             JsonParamBox.IsVisible = false;
@@ -173,8 +239,8 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                     Maximum = isInteger ? int.MaxValue : decimal.MaxValue,
                     Increment = isInteger ? 1 : 0.1m,
                     FormatString = isInteger ? "0" : "0.#####",
-                    MinWidth = 200,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+                    MinWidth = 220,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
                 };
                 if (current is JsonValue jv) {
                     try {
@@ -204,8 +270,8 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                         SelectedIndex = current is JsonValue cv && cv.TryGetValue<string>(out string? cur)
                             ? options.IndexOf(cur)
                             : -1,
-                        MinWidth = 200,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+                        MinWidth = 220,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
                     };
                     cb.SelectionChanged += (_, _) => SyncFormToPayload();
                     control = cb;
@@ -219,8 +285,8 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                 }
                 TextBox tb = new TextBox {
                     Text = current is JsonValue cv2 && cv2.TryGetValue<string>(out string? t) ? t : "",
-                    MinWidth = 200,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+                    MinWidth = 220,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
                 };
                 tb.TextChanged += (_, _) => SyncFormToPayload();
                 control = tb;
@@ -232,7 +298,40 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                 return null;
         }
 
-        return new ParamField(name, new CIField { Label = name, Content = control }, required, readValue, defaultValue);
+        Control row = BuildParamRow(name, control);
+        return new ParamField(name, row, required, readValue, defaultValue);
+    }
+
+    static StackPanel BuildParamRow(string name, Control control) {
+        StackPanel label = new() {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 2,
+            MinWidth = 110,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        label.Children.Add(new TextBlock {
+            Text = name,
+            Opacity = 0.8,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        });
+        return new StackPanel {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 8,
+            Children = { label, control }
+        };
+    }
+
+    void JsonParamBox_OnTextChanged(object? sender, TextChangedEventArgs e) {
+        string? error = null;
+        if (!string.IsNullOrWhiteSpace(JsonParamBox.Text)) {
+            try {
+                JsonNode.Parse(JsonParamBox.Text);
+            } catch (JsonException je) {
+                error = $"JSON 无效: {je.Message}";
+            }
+        }
+        JsonParamError.Text = error ?? "";
+        JsonParamError.IsVisible = error != null;
     }
 
     static List<string> ResolveTypes(JsonObject ps) {
@@ -278,7 +377,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
 
     sealed record ParamField(
         string Name,
-        CIField Field,
+        Control Row,
         bool Required,
         Func<JsonNode?> ReadValue,
         JsonNode DefaultValue);

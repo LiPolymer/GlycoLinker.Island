@@ -44,8 +44,8 @@ public class Plugin : PluginBase {
             };
             await gx.AddFunction(new Field.Method {
                 Id = "ping",
-                FriendlyName = null,
-                Description = null
+                FriendlyName = "Ping",
+                Description = "测试连通性"
             },() => {
                 ServicesCaptureService.GLogger?.LogInformation("Received Ping!");
                 return new PingRespondModel("Pong!");

@@ -11,20 +11,55 @@
     <StackPanel Orientation="Vertical" Spacing="8">
         <ci:Field Label="「G节点ID」">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <AutoCompleteBox ItemsSource="{Binding NodeIds}"
+                <AutoCompleteBox x:Name="GidBox"
+                                 ItemsSource="{Binding NodeIds}"
                                  Text="{Binding Settings.TargetGid, Mode=TwoWay}"
                                  MinWidth="220"
                                  HorizontalAlignment="Stretch"
-                                 FilterMode="Contains"/>
+                                 FilterMode="Contains"
+                                 MinimumPrefixLength="0"
+                                 LostFocus="GidBox_OnLostFocus"
+                                 GotFocus="GidBox_OnGotFocus"
+                                 SelectionChanged="GidBox_OnSelectionChanged">
+                    <AutoCompleteBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" Margin="0,2">
+                                <TextBlock Text="{Binding Id}"  Margin="0,0,0,1"/>
+                                <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" IsVisible="{Binding HasDetail}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </AutoCompleteBox.ItemTemplate>
+                </AutoCompleteBox>
                 <Button Click="ButtonRefresh_OnClick" Content="刷新"/>
             </StackPanel>
         </ci:Field>
         <ci:Field Label="「结构域ID」">
-            <AutoCompleteBox ItemsSource="{Binding FieldIds}"
-                             Text="{Binding Settings.Fid, Mode=TwoWay}"
-                             MinWidth="220"
-                             HorizontalAlignment="Stretch"
-                             FilterMode="Contains"/>
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <AutoCompleteBox x:Name="FidBox"
+                                 ItemsSource="{Binding FieldIds}"
+                                 Text="{Binding Settings.Fid, Mode=TwoWay}"
+                                 MinWidth="220"
+                                 HorizontalAlignment="Stretch"
+                                 FilterMode="Contains"
+                                 MinimumPrefixLength="0"
+                                 LostFocus="FidBox_OnLostFocus"
+                                 GotFocus="FidBox_OnGotFocus"
+                                 SelectionChanged="FidBox_OnSelectionChanged">
+                    <AutoCompleteBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" Margin="0,2">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                    <TextBlock Text="{Binding Id}" Opacity="0.6" VerticalAlignment="Center" IsVisible="{Binding HasFriendlyName}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Description}" FontSize="11" Opacity="0.7" TextWrapping="Wrap" IsVisible="{Binding HasDescription}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </AutoCompleteBox.ItemTemplate>
+                </AutoCompleteBox>
+                <TextBlock Text="仅列出方法结构域"
+                           Opacity="0.6" FontSize="11" TextWrapping="Wrap"/>
+            </StackPanel>
         </ci:Field>
         <ci:Field Label="参数">
             <StackPanel Orientation="Vertical" Spacing="6">
@@ -35,7 +70,13 @@
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          MinHeight="60"
-                         FontFamily="Consolas, Cascadia Mono"/>
+                         FontFamily="Consolas, Cascadia Mono"
+                         TextChanged="JsonParamBox_OnTextChanged"/>
+                <TextBlock x:Name="JsonParamError"
+                           Foreground="OrangeRed"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           IsVisible="False"/>
             </StackPanel>
         </ci:Field>
     </StackPanel>
