@@ -1,18 +1,18 @@
-<ci:ActionSettingsControlBase x:Class="GlycoLinker.Island.Automations.Actions.GlycoCallSettings"
-                              x:TypeArguments="local:GlycoCallConfig"
-                              xmlns="https://github.com/avaloniaui"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                              xmlns:local="clr-namespace:GlycoLinker.Island.Automations.Actions"
-                              xmlns:ci="http://classisland.tech/schemas/xaml/core"
+<ci:TriggerSettingsControlBase x:Class="GlycoLinker.Island.Automations.Triggers.GlycoEventSettings"
+                               x:TypeArguments="local:GlycoEventConfig"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:local="clr-namespace:GlycoLinker.Island.Automations.Triggers"
+                               xmlns:ci="http://classisland.tech/schemas/xaml/core"
                                mc:Ignorable="d" d:DesignWidth="400"
                                x:CompileBindings="False">
     <StackPanel Orientation="Vertical" Spacing="8">
-        <ci:Field Label="「G节点ID」">
+        <ci:Field Label="「源G节点ID」">
             <AutoCompleteBox x:Name="GidBox"
                              ItemsSource="{Binding NodeIds}"
-                             Text="{Binding Settings.TargetGid, Mode=TwoWay}"
+                             Text="{Binding Settings.SourceGid, Mode=TwoWay}"
                              MinWidth="220"
                              HorizontalAlignment="Stretch"
                              FilterMode="Contains"
@@ -30,7 +30,7 @@
                 </AutoCompleteBox.ItemTemplate>
             </AutoCompleteBox>
         </ci:Field>
-        <ci:Field Label="「结构域ID」">
+        <ci:Field Label="「事件结构域ID」">
             <StackPanel Orientation="Vertical" Spacing="4">
                 <AutoCompleteBox x:Name="FidBox"
                                  ItemsSource="{Binding FieldIds}"
@@ -38,13 +38,11 @@
                                  MinWidth="220"
                                  HorizontalAlignment="Stretch"
                                  MinimumPrefixLength="0"
-                                 LostFocus="FidBox_OnLostFocus"
-                                 GotFocus="FidBox_OnGotFocus"
-                                 SelectionChanged="FidBox_OnSelectionChanged">
+                                 GotFocus="FidBox_OnGotFocus">
                     <AutoCompleteBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Vertical" Margin="0,2">
-                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,2">
                                     <TextBlock Text="{Binding DisplayName}"/>
                                     <TextBlock Text="{Binding Id}" Opacity="0.6" VerticalAlignment="Center" IsVisible="{Binding HasFriendlyName}"/>
                                 </StackPanel>
@@ -53,27 +51,12 @@
                         </DataTemplate>
                     </AutoCompleteBox.ItemTemplate>
                 </AutoCompleteBox>
-                <TextBlock Text="仅列出方法结构域"
+                <TextBlock Text="仅列出源节点的 Event 结构域"
                            Opacity="0.6" FontSize="11" TextWrapping="Wrap"/>
             </StackPanel>
         </ci:Field>
-        <ci:Field Label="参数">
-            <StackPanel Orientation="Vertical" Spacing="6">
-                <TextBlock x:Name="ParamNote" TextWrapping="Wrap" Opacity="0.6" IsVisible="False"/>
-                <StackPanel x:Name="ParamForm" Orientation="Vertical" Spacing="6"/>
-                <TextBox x:Name="JsonParamBox"
-                         Text="{Binding Settings.PayloadJson, Mode=TwoWay}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         MinHeight="60"
-                         FontFamily="Consolas, Cascadia Mono"
-                         TextChanged="JsonParamBox_OnTextChanged"/>
-                <TextBlock x:Name="JsonParamError"
-                           Foreground="OrangeRed"
-                           FontSize="11"
-                           TextWrapping="Wrap"
-                           IsVisible="False"/>
-            </StackPanel>
-        </ci:Field>
+        <TextBlock TextWrapping="Wrap" Opacity="0.6">
+            <Run Text="当源节点广播对应结构域的事件时, 触发本工作流"/>
+        </TextBlock>
     </StackPanel>
-</ci:ActionSettingsControlBase>
+</ci:TriggerSettingsControlBase>

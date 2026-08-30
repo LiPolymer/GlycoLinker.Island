@@ -145,12 +145,6 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         }
     }
 
-    void ButtonRefresh_OnClick(object? sender, RoutedEventArgs e) {
-        RefreshSnapshot();
-        RefreshFields();
-        RebuildParamForm();
-    }
-
     Field? ResolveField() {
         GlycoBridge? bridge = GlycoBridge.Instance;
         if (bridge == null) return null;
@@ -175,6 +169,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         }
         if (field is not Field.Method method || method.QuerySchema is not JsonElement schemaEl) {
             if (field is Field.Method) ParamNoteText("该字段为无参 Action, 无需参数。");
+            ClearPayloadJson();
             return;
         }
 
@@ -182,6 +177,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
             if (JsonNode.Parse(schemaEl.GetRawText()) is not JsonObject schemaRoot) return;
             if (schemaRoot["properties"] is not JsonObject props || props.Count == 0) {
                 ParamNoteText("该字段无需参数。");
+                ClearPayloadJson();
                 return;
             }
 
@@ -210,6 +206,13 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     void ParamNoteText(string text) {
         ParamNote.Text = text;
         ParamNote.IsVisible = true;
+    }
+
+    void ClearPayloadJson() {
+        JsonParamBox.IsVisible = false;
+        JsonParamError.IsVisible = false;
+        JsonParamError.Text = "";
+        if (Settings.PayloadJson.Length > 0) Settings.PayloadJson = "";
     }
 
     JsonObject? ParsePayloadObject() {

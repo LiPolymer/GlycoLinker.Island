@@ -27,7 +27,9 @@ public class Plugin : PluginBase {
         services.AddSingleton(_ => new GlycoService(Config.Instance.Gid));
         services.AddHostedService<GlycoBridge>();
         services.AddAction<GlycoCallAction, GlycoCallSettings>();
+        services.AddAction<GlycoEmitterAction, GlycoEmitterSettings>();
         services.AddTrigger<GlycoTrigger, GlycoTriggerSettings>();
+        services.AddTrigger<GlycoEventTrigger, GlycoEventSettings>();
         services.AddSettingsPage<SettingsPage>();
         AppBase.Current.AppStarted += async (_,_) => {
             GlycoComplex? gx = IAppHost.TryGetService<GlycoService>();
