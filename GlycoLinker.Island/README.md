@@ -1,5 +1,7 @@
 # GlycoLinker.Island
 
+> 下面暂时是AI夏季吧写的 不想写说是
+
 **GlycoLinker** 是一个将 [ClassIsland](https://classisland.tech) 接入 [Glycoprotein](https://glycoprotein.dev) 节点网络的插件, 让 ClassIsland 的自动化能力可以与外部节点双向联动。
 
 ## 功能

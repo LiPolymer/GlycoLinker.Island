@@ -1,13 +1,9 @@
 # nonk8s
-# 插件清单文件使用 YAML 格式存储。
-# YAML 教程：https://www.runoob.com/w3cnote/yaml-intro.html
-# 插件清单格式：https://docs.classisland.tech/zh-cn/latest/dev/plugins/create-project/#%E6%8F%92%E4%BB%B6%E6%B8%85%E5%8D%95%E6%96%87%E4%BB%B6
-
 id: GlycoLinker.Island
 name: GlycoLinker.Island
-description: 将 ClassIsland 自动化接入 Glycoprotein 节点网络, 双向调用 Action 与触发器
+description: Glycoprotein协议支持
 entranceAssembly: "GlycoLinker.Island.dll"
-url: https://example.com
+url: https://github.com/LiPolymer/GlycoLinker.Island
 version: 0.0.0.0
-apiVersion: 2.0.0.0
-author: 无名氏
+apiVersion: 2.1.1.1
+author: LiPolymer
