@@ -14,6 +14,7 @@ public class GlycoBridge : IHostedService {
     readonly ILogger<GlycoBridge> _logger;
     readonly object _lock = new();
     readonly Dictionary<string, HashSet<Action>> _triggers = [];
+    readonly Dictionary<string, (string? FriendlyName, string? Description)> _metas = [];
     readonly object _snapshotLock = new();
     List<BeaconInfo> _snapshot = [];
 
@@ -37,12 +38,13 @@ public class GlycoBridge : IHostedService {
 
     public IReadOnlyList<string> DiscoveredNodeIds => Snapshot.Select(b => b.Id).ToArray();
     
-    public void Register(string fid, Action fire) {
+    public void Register(string fid, Action fire, string? friendlyName = null, string? description = null) {
         if (string.IsNullOrWhiteSpace(fid)) {
             _logger.LogWarning("拒绝注册空 fid 的触发器");
             return;
         }
         bool isFirst;
+        bool metaChanged;
         lock (_lock) {
             if (!_triggers.TryGetValue(fid, out HashSet<Action>? set)) {
                 set = [];
@@ -52,13 +54,38 @@ public class GlycoBridge : IHostedService {
                 isFirst = false;
             }
             set.Add(fire);
-            _logger.LogInformation("已注册 {fid}", fid);
+
+            (string?, string?) meta = (Normalize(friendlyName), Normalize(description));
+            metaChanged = isFirst || !_metas.TryGetValue(fid, out (string?, string?) prev) || prev != meta;
+            _metas[fid] = meta;
         }
-        if (!isFirst) return;
-        _logger.LogInformation("首次注册触发器字段 [Fid={Fid}], 正在暴露 Glycoprotein Action", fid);
-        _gx.AddAction(fid, () => InvokeAll(fid));
+        if (isFirst) {
+            _logger.LogInformation("首次注册触发器字段 [Fid={Fid}], 正在暴露 Glycoprotein Action", fid);
+            AddTriggerField(fid, friendlyName, description);
+            return;
+        }
+        if (!metaChanged) {
+            _logger.LogInformation("已注册 {fid}", fid);
+            return;
+        }
+        _logger.LogInformation("触发器字段元数据更新 [Fid={Fid}]", fid);
+        try {
+            AddTriggerField(fid, friendlyName, description);
+        } catch (Exception e) {
+            _logger.LogWarning(e, "更新字段 [Fid={Fid}] 元数据失败", fid);
+        }
+    }
+
+    void AddTriggerField(string fid, string? friendlyName, string? description) {
+        _gx.AddAction(new Field.Method {
+            Id = fid,
+            FriendlyName = Normalize(friendlyName),
+            Description = Normalize(description)
+        }, () => InvokeAll(fid));
         TryRefreshBeacon();
     }
+
+    static string? Normalize(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     public void Unregister(string fid, Action fire) {
         bool empty;
@@ -66,7 +93,10 @@ public class GlycoBridge : IHostedService {
             if (!_triggers.TryGetValue(fid, out HashSet<Action>? set)) return;
             set.Remove(fire);
             empty = set.Count == 0;
-            if (empty) _triggers.Remove(fid);
+            if (empty) {
+                _triggers.Remove(fid);
+                _metas.Remove(fid);
+            }
         }
         if (!empty) return;
         _logger.LogInformation("字段 [Fid={Fid}] 的触发器已全部卸载, 正在注销字段", fid);

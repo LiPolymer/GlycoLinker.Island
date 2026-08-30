@@ -41,7 +41,19 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     public GlycoCallSettings() {
         InitializeComponent();
         DataContext = this;
+        FidBox.ItemFilter = FilterFieldOption;
     }
+
+    static bool FilterFieldOption(string? search, object? item) {
+        if (item is not FieldOption option) return false;
+        if (string.IsNullOrEmpty(search)) return true;
+        return Match(option.Id, search)
+            || (option.FriendlyName is { Length: > 0 } f && Match(f, search))
+            || (option.Description is { Length: > 0 } d && Match(d, search));
+    }
+
+    static bool Match(string source, string search) =>
+        source.Contains(search, StringComparison.OrdinalIgnoreCase);
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
         base.OnAttachedToVisualTree(e);

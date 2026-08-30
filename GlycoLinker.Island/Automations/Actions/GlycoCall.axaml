@@ -40,7 +40,6 @@
                                  Text="{Binding Settings.Fid, Mode=TwoWay}"
                                  MinWidth="220"
                                  HorizontalAlignment="Stretch"
-                                 FilterMode="Contains"
                                  MinimumPrefixLength="0"
                                  LostFocus="FidBox_OnLostFocus"
                                  GotFocus="FidBox_OnGotFocus"

@@ -14,6 +14,18 @@
                      MinWidth="220"
                      HorizontalAlignment="Stretch"/>
         </ci:Field>
+        <ci:Field Label="友好名称">
+            <TextBox Text="{Binding Settings.FriendlyName, Mode=TwoWay}"
+                     MinWidth="220"
+                     HorizontalAlignment="Stretch"
+                     PlaceholderText="选填, 展示给网络上其他节点的名称"/>
+        </ci:Field>
+        <ci:Field Label="描述">
+            <TextBox Text="{Binding Settings.Description, Mode=TwoWay}"
+                     MinWidth="220"
+                     HorizontalAlignment="Stretch"
+                     PlaceholderText="选填, 字段用途说明"/>
+        </ci:Field>
         <TextBlock TextWrapping="Wrap" Opacity="0.6">
             <Run Text="本机「G节点ID」["/><Run Text="{Binding LocalGid}"/><Run Text="]"/>
         </TextBlock>
