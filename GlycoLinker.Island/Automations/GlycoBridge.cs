@@ -29,6 +29,7 @@ public class GlycoBridge : IHostedService {
         Instance = this;
         _gx.OnDiscovered += _ => RebuildSnapshot();
         _gx.OnExpired += _ => RebuildSnapshot();
+        _gx.OnChanged += _ => RebuildSnapshot();
     }
 
     public GlycoService Service => _gx;

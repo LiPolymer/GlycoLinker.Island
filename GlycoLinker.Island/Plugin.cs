@@ -41,6 +41,9 @@ public class Plugin : PluginBase {
             gx.OnDiscovered += beacon => {
                 ServicesCaptureService.GLogger?.LogInformation("发现G节点:[{BeaconId}]拥有[{FieldsCount}]个域", beacon.Id, beacon.Fields.Count);
             };
+            gx.OnChanged += beacon => {
+                ServicesCaptureService.GLogger?.LogInformation("G节点字段变更:[{BeaconId}]拥有[{FieldsCount}]个域", beacon.Id, beacon.Fields.Count);
+            };
             gx.OnExpired += beacon => {
                 ServicesCaptureService.GLogger?.LogInformation("G节点过期:[{beaconId}]", beacon.Id);
             };
