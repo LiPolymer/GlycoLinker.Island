@@ -5,7 +5,7 @@ using ClassIsland.Core.Attributes;
 namespace GlycoLinker.Island;
 
 [HidePageTitle]
-[SettingsPageInfo("glycolinker.master","GlycoLinker","\uEA37","\uEA36")]
+[SettingsPageInfo("glycolinker.master","GlycoLinker","\uE63D","\uEA36")]
 public partial class SettingsPage : SettingsPageBase {
     string _initialGid;
 
