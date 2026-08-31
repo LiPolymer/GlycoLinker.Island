@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GlycoLinker.Island.Automations;
 
-public record BeaconInfo(string Id, IReadOnlyList<Field> Fields);
+public record BeaconInfo(string Id, string? Vendor, IReadOnlyList<Field> Fields);
 
 public class GlycoBridge : IHostedService {
     public static GlycoBridge? Instance;
@@ -232,7 +232,7 @@ public class GlycoBridge : IHostedService {
 
     void RebuildSnapshot() {
         lock (_snapshotLock) {
-            _snapshot = _gx.Presenters.Select(b => new BeaconInfo(b.Id, b.Fields)).ToList();
+            _snapshot = _gx.Presenters.Select(b => new BeaconInfo(b.Id,b.Vendor,b.Fields)).ToList();
         }
         SnapshotChanged?.Invoke();
     }

@@ -12,6 +12,7 @@
 
 - 通过自动补全选择目标节点 (Gid) 与字段 (Fid)
 - 若目标字段带有 JSON Schema 参数, 会自动生成可视化参数表单, 无需手写 JSON
+- 参数类型可用标准特性标注易读名: `[Display(Name = "易读名", Description = "说明")]` 或 `[Description("易读名")]`, 表单会以易读名展示参数 (原名以小字保留)
 - 支持 `string` / `integer` / `number` / `boolean` / `enum` 类型的参数; 复杂参数可回退到原始 JSON 输入
 - 调用带 10 秒超时, 失败会在行动项中显示错误
 

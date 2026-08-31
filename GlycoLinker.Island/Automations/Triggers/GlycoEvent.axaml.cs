@@ -76,7 +76,7 @@ public partial class GlycoEventSettings : TriggerSettingsControlBase<GlycoEventC
     void RefreshSnapshot() {
         NodeIds.Clear();
         foreach (BeaconInfo beacon in GlycoBridge.Instance?.Snapshot ?? []) {
-            NodeIds.Add(new NodeOption(beacon.Id, beacon.Fields.Count));
+            NodeIds.Add(new NodeOption(beacon.Id,beacon.Vendor,beacon.Fields.Count));
         }
     }
 

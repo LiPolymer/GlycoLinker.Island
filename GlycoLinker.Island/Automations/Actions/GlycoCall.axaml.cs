@@ -15,8 +15,13 @@ using Microsoft.Extensions.Logging;
 
 namespace GlycoLinker.Island.Automations.Actions;
 
-public sealed record NodeOption(string Id, int FieldCount) {
-    public string Detail => $"{FieldCount} 个字段";
+public sealed record NodeOption(string Id, string? Vendor, int FieldCount) {
+    public string Detail {
+        get {
+            string fields = FieldCount == 1 ? "1 个字段" : $"{FieldCount} 个字段";
+            return Vendor is { Length: > 0 } v ? $"{v} · {fields}" : fields;
+        }
+    }
     public bool HasDetail => true;
     public override string ToString() => Id;
 }
@@ -123,7 +128,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     void RefreshSnapshot() {
         NodeIds.Clear();
         foreach (BeaconInfo beacon in GlycoBridge.Instance?.Snapshot ?? []) {
-            NodeIds.Add(new NodeOption(beacon.Id, beacon.Fields.Count));
+            NodeIds.Add(new NodeOption(beacon.Id,beacon.Vendor,beacon.Fields.Count));
         }
     }
 
@@ -225,6 +230,8 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
     }
 
     ParamField? BuildParamField(string name, JsonObject ps, bool required, JsonObject? payload) {
+        string? title = ps["title"] is JsonValue tv && tv.TryGetValue<string>(out string? t) ? t : null;
+        string? description = ps["description"] is JsonValue dv && dv.TryGetValue<string>(out string? d) ? d : null;
         List<string> types = ResolveTypes(ps);
         if (types.Contains("object") || types.Contains("array")) return null;
         string? type = types.FirstOrDefault(t => t != "null");
@@ -299,7 +306,7 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                     break;
                 }
                 TextBox tb = new TextBox {
-                    Text = current is JsonValue cv2 && cv2.TryGetValue<string>(out string? t) ? t : "",
+                    Text = current is JsonValue cv2 && cv2.TryGetValue<string>(out string? o) ? o : "",
                     MinWidth = 220,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
                 };
@@ -313,27 +320,55 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                 return null;
         }
 
-        Control row = BuildParamRow(name, control);
+        Control row = BuildParamRow(name, title, description, control);
         return new ParamField(name, row, required, readValue, defaultValue);
     }
 
-    static StackPanel BuildParamRow(string name, Control control) {
+    static StackPanel BuildParamRow(string name, string? title, string? description, Control control) {
         StackPanel label = new() {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Spacing = 2,
+            Spacing = 6,
             MinWidth = 110,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        label.Children.Add(new TextBlock {
-            Text = name,
-            Opacity = 0.8,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-        });
-        return new StackPanel {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Spacing = 8,
-            Children = { label, control }
+        if (title is { Length: > 0 }) {
+            label.Children.Add(new TextBlock {
+                Text = title,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            });
+            label.Children.Add(new TextBlock {
+                Text = name,
+                FontSize = 11,
+                Opacity = 0.6,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            });
+        } else {
+            label.Children.Add(new TextBlock {
+                Text = name,
+                Opacity = 0.8,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            });
+        }
+        StackPanel row = new() {
+            Orientation = Avalonia.Layout.Orientation.Vertical,
+            Spacing = 2,
+            Children = {
+                new StackPanel {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    Spacing = 8,
+                    Children = { label, control }
+                }
+            }
         };
+        if (description is { Length: > 0 }) {
+            row.Children.Add(new TextBlock {
+                Text = description,
+                FontSize = 11,
+                Opacity = 0.7,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            });
+        }
+        return row;
     }
 
     void JsonParamBox_OnTextChanged(object? sender, TextChangedEventArgs e) {

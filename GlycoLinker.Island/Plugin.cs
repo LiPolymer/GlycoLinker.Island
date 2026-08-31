@@ -38,6 +38,7 @@ public class Plugin : PluginBase {
                 return;
             }
             ServicesCaptureService.Logger?.LogInformation("正在启动 Glycoprotein 服务");
+            gx.Vendor = $"ClassIsland {AppBase.AppVersion} {AppBase.AppCodeName} GL";
             gx.OnDiscovered += beacon => {
                 ServicesCaptureService.GLogger?.LogInformation("发现G节点:[{BeaconId}]拥有[{FieldsCount}]个域", beacon.Id, beacon.Fields.Count);
             };
