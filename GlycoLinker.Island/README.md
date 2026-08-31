@@ -1,8 +1,11 @@
 # GlycoLinker.Island
+*A0.01*
+
+> 本插件需要 ClassIsland 2.1.1.1 来运行, 其为开发构建.
 
 > 下面暂时是AI夏季吧写的 不想写说是
 
-**GlycoLinker** 是一个将 [ClassIsland](https://classisland.tech) 接入 [Glycoprotein](https://glycoprotein.dev) 节点网络的插件, 让 ClassIsland 的自动化能力可以与外部节点双向联动。
+**GlycoLinker** 是一个将 [ClassIsland](https://classisland.tech) 接入 [Glycoprotein](https://gitlab.com/LiPolymer/Glycoprotein) ([Github](https://github.com/LiPolymer/Glycoprotein)) 节点网络的插件, 让 ClassIsland 的自动化能力可以与外部节点双向联动。
 
 ## 功能
 
@@ -35,18 +38,3 @@
 ### 触发器: Glycoprotein 调用
 
 添加 **「Glycoprotein 调用」** 触发器后, 本机会向网络暴露一个字段 (Fid)。外部节点对本机执行 `DoActionAsync(本机Gid, Fid)` 即可触发该触发器, 运行关联的工作流行动组。可为字段附加友好名称与描述, 便于网络上其他节点识别。
-
-## 使用前提
-
-- 目标节点与本机必须处于同一 Glycoprotein 网络 (socket 目录: `%TEMP%\glycoprotein`)
-- 各节点通过 Unix Domain Socket 自动发现彼此, 无需额外配置
-
-## 常见问题
-
-**为什么调用失败?**
-- 检查目标节点 Gid / Fid 是否正确, 节点是否在线 (约 2 秒发现周期)
-- 检查字段是否为 Action 或带参函数 (Event 字段不可通过本行动调用)
-
-**触发器被调用但工作流未执行?**
-- 确认【应用设置】->【自动化】已启用
-- 确认工作流的行动组处于启用状态

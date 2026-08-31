@@ -4,6 +4,9 @@ name: GlycoLinker.Island
 description: Glycoprotein协议支持
 entranceAssembly: "GlycoLinker.Island.dll"
 url: https://github.com/LiPolymer/GlycoLinker.Island
-version: 0.0.0.0
+version: 0.0.1.0
 apiVersion: 2.1.1.1
 author: LiPolymer
+repoOwner: LiPolymer
+repoName: GlycoLinker.Island
+assetsRoot: main/GlycoLinker.Island
