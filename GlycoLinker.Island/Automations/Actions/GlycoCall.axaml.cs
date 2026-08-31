@@ -169,30 +169,34 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
         Field? field = ResolveField();
         if (field is Field.Event) {
             ParamNoteText("该字段为 Event 类型, 无法通过本行动调用, 请改选 Method 字段。");
+            ParamNote.IsVisible = true;
             JsonParamBox.IsVisible = false;
             return;
         }
         if (field is not Field.Method method || method.QuerySchema is not JsonElement schemaEl) {
-            if (field is Field.Method) ParamNoteText("该字段为无参 Action, 无需参数。");
+            if (field is not Field.Method) return;
+            ParamNoteText("该字段为无参 Action, 无需参数。");
+            JsonParamBox.IsVisible = false;
             ClearPayloadJson();
             return;
         }
 
         try {
-            if (JsonNode.Parse(schemaEl.GetRawText()) is not JsonObject schemaRoot) return;
+            if (JsonNode.Parse(schemaEl.GetRawText()) is not JsonObject schemaRoot) {
+                JsonParamBox.IsVisible = true;
+                return;
+            }
             if (schemaRoot["properties"] is not JsonObject props || props.Count == 0) {
                 ParamNoteText("该字段无需参数。");
                 ClearPayloadJson();
                 return;
             }
-
             HashSet<string> required = [];
             if (schemaRoot["required"] is JsonArray requiredArr) {
                 foreach (JsonNode? item in requiredArr) {
                     if (item?.GetValue<string>() is { } name) required.Add(name);
                 }
             }
-
             JsonObject? payload = ParsePayloadObject();
             foreach ((string name, JsonNode? psNode) in props) {
                 if (psNode is not JsonObject ps) return;
@@ -201,9 +205,9 @@ public partial class GlycoCallSettings : ActionSettingsControlBase<GlycoCallConf
                 _paramFields.Add(pf);
                 ParamForm.Children.Add(pf.Row);
             }
-
             JsonParamBox.IsVisible = false;
         } catch (JsonException e) {
+            JsonParamBox.IsVisible = true;
             ServicesCaptureService.Logger?.LogWarning(e, "解析 QuerySchema 失败, 回退到原始 JSON 模式");
         }
     }
