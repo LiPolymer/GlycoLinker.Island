@@ -2,14 +2,23 @@ using System.ComponentModel;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GlycoLinker.Island.Automations;
+using System.Text.Json.Serialization;
 
 namespace GlycoLinker.Island;
 
 public partial class Config: ObservableObject {
     public static Config? Instance;
     public static string? SaveDist;
+    public List<BeaconInfo> SavedSaiNodes { get; set; } = [];
     static JsonSerializerOptions? _jso;
     public Config() {
+        PropertyChanged += Save;
+    }
+    [JsonConstructor]
+    public Config(string? gid, List<BeaconInfo>? savedSaiNodes) {
+        _gid = gid ?? "glycoLink-undefined";
+        SavedSaiNodes = savedSaiNodes ?? [];
         PropertyChanged += Save;
     }
     public static Config Load() {

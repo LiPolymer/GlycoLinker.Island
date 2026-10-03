@@ -1,0 +1,144 @@
+<ci:SettingsPageBase xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                     xmlns:sai="clr-namespace:GlycoLinker.Island.Sai"
+                     xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+                     x:DataType="sai:GlycoSaiNodeStore"
+                     x:CompileBindings="False"
+                     x:Class="GlycoLinker.Island.Sai.GlycoSaiSettingsPage">
+    <StackPanel Orientation="Vertical" Classes="settings-container animated-intro"
+                Spacing="16" SizeChanged="Page_OnSizeChanged">
+        <StackPanel.Styles>
+            <Style Selector="TextBlock.secondary">
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </Style>
+            <Style Selector="Border.node-panel">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="16"/>
+            </Style>
+            <Style Selector="ListBox.node-list">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="MinHeight" Value="160"/>
+                <Setter Property="MaxHeight" Value="360"/>
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            </Style>
+            <Style Selector="ListBox.node-list ListBoxItem">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Margin" Value="0,0,0,6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+            </Style>
+        </StackPanel.Styles>
+
+        <TextBlock Text="选择需要在 SAI 中使用的节点。保存后，即使节点离线，其积木仍会保留。"
+                   Classes="secondary" TextWrapping="Wrap"/>
+        <Border IsVisible="{Binding HasError}" Padding="12" CornerRadius="6">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <Grid x:Name="NodeColumns" ColumnDefinitions="*,*" RowDefinitions="Auto"
+              ColumnSpacing="16" RowSpacing="16">
+            <Border Classes="node-panel">
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="未保存节点" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="{Binding UnsavedNodes.Count}" Classes="secondary"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <ListBox ItemsSource="{Binding UnsavedNodes}" Classes="node-list">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="sai:GlycoSaiNodeRow">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                        <StackPanel Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Id}" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Id}"/>
+                                            <WrapPanel>
+                                                <TextBlock Text="{Binding Vendor}" FontStyle="Italic" FontSize="12"
+                                                           Classes="secondary" Margin="0,0,12,0" TextWrapping="Wrap"
+                                                           IsVisible="{Binding Vendor, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Ellipse Width="7" Height="7" Fill="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding StatusText}" Classes="secondary" FontSize="12"/>
+                                                </StackPanel>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Tag="{Binding Id}" Click="SaveNode_OnClick"
+                                                VerticalAlignment="Center" Padding="10,6"
+                                                ToolTip.Tip="保存节点，保留其 SAI 积木" AutomationProperties.Name="保存节点">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <ci:FluentIcon Glyph="{Binding MoveGlyph}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="保存"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel IsVisible="{Binding !HasUnsavedNodes}" Spacing="6" Margin="12"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <TextBlock Text="暂无可保存的节点" HorizontalAlignment="Center"/>
+                            <TextBlock Text="节点上线后会显示在这里" Classes="secondary" FontSize="12"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+            <Border x:Name="SavedPanel" Grid.Column="1" Classes="node-panel">
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="已保存节点" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="{Binding SavedNodes.Count}" Classes="secondary"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <ListBox ItemsSource="{Binding SavedNodes}" Classes="node-list">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="sai:GlycoSaiNodeRow">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                        <StackPanel Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Id}" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Id}"/>
+                                            <WrapPanel>
+                                                <TextBlock Text="{Binding Vendor}" FontStyle="Italic" FontSize="12"
+                                                           Classes="secondary" Margin="0,0,12,0" TextWrapping="Wrap"
+                                                           IsVisible="{Binding Vendor, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Ellipse Width="7" Height="7" Fill="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding StatusText}" Classes="secondary" FontSize="12"/>
+                                                </StackPanel>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Tag="{Binding Id}" Click="UnsaveNode_OnClick"
+                                                VerticalAlignment="Center" Padding="10,6"
+                                                ToolTip.Tip="取消保存，移除该节点的 SAI 积木" AutomationProperties.Name="取消保存节点">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <ci:FluentIcon Glyph="{Binding MoveGlyph}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="取消保存"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel IsVisible="{Binding !HasSavedNodes}" Spacing="6" Margin="12"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <TextBlock Text="尚未保存节点" HorizontalAlignment="Center"/>
+                            <TextBlock Text="点击「保存」以添加节点积木" Classes="secondary" FontSize="12"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <TextBlock Text="保存列表或信标更新后，请重新打开或刷新 Blockly 页面以加载最新积木。"
+                   Classes="secondary" FontSize="12" TextWrapping="Wrap"/>
+    </StackPanel>
+</ci:SettingsPageBase>

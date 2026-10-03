@@ -10,3 +10,6 @@ author: LiPolymer
 repoOwner: LiPolymer
 repoName: GlycoLinker.Island
 assetsRoot: main/GlycoLinker.Island
+dependencies:
+  - id: lrs2187.sai
+    isRequired: false
